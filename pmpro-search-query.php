@@ -44,7 +44,16 @@ function tsw_pmpro_load_plugin_textdomain()
 }
 
 // templating
-
+//add_action( 'pre_get_posts', 'tsw_pmpro_custom_search_filter' );
+function tsw_pmpro_custom_search_filter( $query ) {
+    if ( $query->is_search() && !is_admin() && $query->is_main_query() ) {
+        if ( isset( $_GET['value'] ) && !empty( $_GET['value'] ) ) {
+            $query->set( 'category_name', sanitize_text_field( $_GET['category'] ) );
+        }
+    } else {
+        remove_action( 'pre_get_posts', 'tsw_pmpro_custom_search_filter' );
+    }
+}
 /**
  * Register the custom user meta fields if they don't already exist through PMPRO settings.
  * This is a fallback and good practice. If you've already set them up in PMPRO,
@@ -79,7 +88,7 @@ function pmpro_csm_register_custom_user_fields() {
         // Fallback if PMPro directory page isn't explicitly set.
         // This assumes your theme might have a generic `/members/` or a custom archive template
         // that you will set up to handle member searches.
-        $form_action_url = '/search-members';
+        $form_action_url = home_url('/') . 'search-members/' . urlencode( get_query_var( 's' ) ); 
     }
 
     // --- Search Form HTML Generation ---
@@ -117,7 +126,7 @@ function pmpro_csm_register_custom_user_fields() {
                     // Validate cleaned value is not empty and contains alphanumeric/punctuation characters.
                     // The regex allows letters, numbers, spaces, hyphens, underscores, periods, commas, parentheses, and ampersands.
                     if ( ! empty( $cleaned_sub_value ) 
-                        && preg_match( '/^[a-zA-Z0-9\s\-_.,()&]+$/', $cleaned_sub_value ) ) {
+                        && preg_match( '/^[a-zA-Z0-9\s\-_,()&]+$/', $cleaned_sub_value ) ) {
                         $unique_values_for_dropdown[] = $cleaned_sub_value;
                     }
                 }
@@ -176,7 +185,8 @@ function pmpro_csm_register_custom_user_fields() {
 
     // Add the submit button.
     $output .= '<div class="form-field form-submit">' . wp_nonce_field( 'search-members' );
-    $output .= '<input type="submit" value="Buscar Miembros" class="pmpro-submit-button">';
+    $output .= '<input type="hidden" name="action" value="search-members" />
+                <input type="submit" value="Buscar Miembros" class="pmpro-submit-button">';
     $output .= '</div>';
 
     $output .= '</div>'; // Close .pmpro-member-search-form

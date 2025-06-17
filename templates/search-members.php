@@ -28,10 +28,11 @@ get_header();
 <div id="primary" <?php astra_primary_class(); ?>>
     <?php
     astra_primary_content_top(); ?>
-    <?php    
+    <?php 
         if ( isset( $_GET['_wpnonce'] ) 
-        && !wp_verify_nonce(  sanitize_text_field( wp_unslash( $_GET['_wpnonce'], 'search-members' ) ) ) ) {
-        die( 'Security Check!' );
+        && !wp_verify_nonce(  sanitize_text_field( 
+        wp_unslash( $_GET['_wpnonce'], 'search-members' ) ) ) ) {
+            die( 'Security Check!' );
     }
     // Retrieve and sanitize search parameters from the URL.
     // Ensure these names match the 'name' attributes in your search form.
