@@ -11,17 +11,15 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
-
 /**
- * Generates the HTML for a member search form with specified custom field dropdowns.
- *
- * @return string The complete HTML string for the search form.
+ * Register the custom user meta fields if they don't already exist through PMPRO settings.
+ * This is a fallback and good practice. If you've already set them up in PMPRO,
+ * this section is not strictly necessary but harmless.
  */
-function tsw_pmpro_member_details_search_form() {
+function pmpro_csm_register_custom_user_fields() {
     // Before proceeding, check if Paid Memberships Pro is active.
     // This prevents fatal errors if PMPro is not installed or activated.
     if ( ! function_exists( 'pmpro_getOption' ) ) {
-        // Return an error message if PMPro is not found.
         return '<p style="color: red; text-align: center;">Error: Paid Memberships Pro is not active. This form requires PMPro.</p>';
     }
 
@@ -29,44 +27,85 @@ function tsw_pmpro_member_details_search_form() {
     $output = ''; // Initialize an empty string to build the form HTML.
 
     // Define the custom user fields that should be displayed as dropdowns.
-    // The key is the meta_key (field name) and the value is the display label.
-    // 'mi_biograf_a' is typically a long text field (textarea) and is not
-    // suitable for a select dropdown. We'll focus on the other two.
+    // 'ocupaci_n' and 'categor_a_de_servicio' are suitable for dropdowns.
+    // 'mi_biograf_a' is a text area and is best covered by the general keyword search.
     $searchable_fields = array(
         'ocupaci_n'             => 'Ocupación',
         'categor_a_de_servicio' => 'Categoría de servicio',
     );
 
+    // --- Determine the form action URL ---
+    // Check if PMPro's members directory page is configured.
+    $pmpro_members_page_id = pmpro_getOption( 'members_page_id' );
+    if ( ! empty( $pmpro_members_page_id ) ) {
+        // If the PMPro members page exists, use its permalink as the form action.
+        $form_action_url = get_permalink( $pmpro_members_page_id );
+    } else {
+        // Fallback if PMPro directory page isn't explicitly set.
+        // This assumes your theme might have a generic `/members/` or a custom archive template
+        // that you will set up to handle member searches.
+        $form_action_url = '';
+    }
+
+    // --- Search Form HTML Generation ---
     // Start the HTML form.
     // The form uses GET method, meaning parameters will be in the URL (e.g., ?ocupaci_n=Doctor).
-    // The action points to the site's home URL, which is a common setup for basic search.
-    // You might want to change this to a specific search results page if you have one.
-    $output .= '<form method="get" action="' . esc_url( home_url( '/' ) ) . '">';
+    $output .= '<form method="get" action="' . esc_url( $form_action_url ) . '">';
     $output .= '<div class="pmpro-member-search-form">'; // Main container div for styling.
-    $output .= '<h2>Buscar miembros por detalles</h2>'; // Form title.
+    $output .= '<h2>Buscar Miembros</h2>'; // Form title, updated for clarity
 
     // Loop through each defined searchable field to create a dropdown.
     foreach ( $searchable_fields as $meta_key => $label ) {
-        $options = array(); // Array to hold dropdown options for the current field.
+        $unique_values_for_dropdown = array(); // Array to hold unique, processed values for the dropdown.
 
-        // Query the WordPress user meta table to get all unique values
-        // for the current meta_key. This is robust as it fetches actual
-        // data entered by users, regardless of the field's original type
-        // (e.g., text input vs. predefined select options).
+        // Query the WordPress user meta table to get all distinct meta_values
+        // for the current meta_key. This fetches the raw data as stored.
         $query = $wpdb->prepare(
             "SELECT DISTINCT meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value != '' ORDER BY meta_value ASC",
             $meta_key
         );
         $raw_options = $wpdb->get_col( $query ); // Execute query and get results as an array of column values.
 
+        // Process raw options to handle potential serialization and extract clean alphanumeric values.
+        foreach ( $raw_options as $option_value ) {
+            // Use maybe_unserialize() which attempts to unserialize if the string is serialized,
+            // otherwise, it returns the original value. This is robust for various storage types.
+            $unserialized_value = maybe_unserialize( $option_value );
+
+            // If the value is an array (e.g., from a multi-select field stored as serialized array),
+            // iterate through its elements.
+            if ( is_array( $unserialized_value ) ) {
+                foreach ( $unserialized_value as $sub_value ) {
+                    // Ensure the sub-value is a string and trim whitespace.
+                    $cleaned_sub_value = trim( strval( $sub_value ) );
+                    // Validate that the cleaned value is not empty and contains allowed alphanumeric/punctuation characters.
+                    // The regex allows letters, numbers, spaces, hyphens, underscores, periods, commas, parentheses, and ampersands.
+                    if ( ! empty( $cleaned_sub_value ) && preg_match( '/^[a-zA-Z0-9\s\-_.,()&]+$/', $cleaned_sub_value ) ) {
+                        $unique_values_for_dropdown[] = $cleaned_sub_value;
+                    }
+                }
+            } else {
+                // If it's a single string value (or unserialized to a non-array type),
+                // clean it and add it directly.
+                $cleaned_value = trim( strval( $unserialized_value ) );
+                if ( ! empty( $cleaned_value ) && preg_match( '/^[a-zA-Z0-9\s\-_.,()&]+$/', $cleaned_value ) ) {
+                    $unique_values_for_dropdown[] = $cleaned_value;
+                }
+            }
+        }
+
+        // Ensure all values are truly unique and sort them alphabetically for the dropdown.
+        $unique_values_for_dropdown = array_unique( $unique_values_for_dropdown );
+        sort( $unique_values_for_dropdown );
+
+        $options = array(); // Final array to hold dropdown options for the current field.
         // Add a default "select all" or "any" option at the beginning of the dropdown.
         // An empty value allows for clearing the filter for this field.
-        $options[''] = '— Select ' . esc_html( $label ) . ' —';
+        $options[''] = '— Seleccionar ' . esc_html( $label ) . ' —';
 
-        // Populate the options array from the database results.
-        // The key and value are the same for simplicity in this case.
-        foreach ( $raw_options as $option_value ) {
-            $options[ $option_value ] = $option_value;
+        // Populate the dropdown options from the processed unique values.
+        foreach ( $unique_values_for_dropdown as $value ) {
+            $options[ $value ] = $value;
         }
 
         // Build the HTML for the current dropdown field.
@@ -84,28 +123,28 @@ function tsw_pmpro_member_details_search_form() {
         $output .= '</div>'; // Close .form-field
     }
 
-    // Optional: Add a general keyword search input.
-    // This allows users to search by name or other text-based fields.
+    // Optional: Add a general keyword search input, suitable for fields like 'mi_biograf_a'.
     $output .= '<div class="form-field">';
-    $output .= '<label for="s">Keywords:</label>';
-    $output .= '<input type="text" name="s" id="s" value="' . ( isset( $_GET['s'] ) ? esc_attr( $_GET['s'] ) : '' ) . '" placeholder="Search by name or general keyword" class="pmpro-field-text">';
+    $output .= '<label for="s">Palabras Clave:</label>';
+    $output .= '<input type="text" name="s" id="s" value="' . ( isset( $_GET['s'] ) ? esc_attr( $_GET['s'] ) : '' ) . '" placeholder="Buscar por nombre, biografía o palabra clave general" class="pmpro-field-text">';
     $output .= '</div>';
 
     // Add the submit button.
     $output .= '<div class="form-field form-submit">';
-    $output .= '<input type="submit" value="Search Members" class="pmpro-submit-button">';
+    $output .= '<input type="submit" value="Buscar Miembros" class="pmpro-submit-button">';
     $output .= '</div>';
 
     $output .= '</div>'; // Close .pmpro-member-search-form
     $output .= '</form>'; // Close form
 
-    return $output; // Return the generated HTML.
+    return $output; // Return only the generated HTML for the form.
 }
-// Register the shortcode. Users can now use [pmpro_custom_user_search] in pages/posts.
-add_shortcode( 'pmpro_custom_user_search', 'tsw_pmpro_member_details_search_form' );
+// register shortcode
+add_shortcode( 'pmpro_custom_user_search', 'pmpro_csm_register_custom_user_fields' );
+
 
 /**
- * Adds basic CSS styling for the search form.
+ * Adds basic CSS styling for the search form and results.
  * This function hooks into 'wp_head' to output styles directly into the <head> section.
  * For more complex styling, consider enqueuing a separate stylesheet.
  */
@@ -113,7 +152,7 @@ function tsw_pmpro_search_form_styles() {
     echo '
     <style>
         /* Basic reset/base for consistency */
-        .pmpro-member-search-form * {
+        .pmpro-member-search-form *, .pmpro-member-search-results * {
             box-sizing: border-box;
             font-family: "Inter", sans-serif;
         }
@@ -208,7 +247,7 @@ function tsw_pmpro_search_form_styles() {
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Responsive adjustments */
+        /* Responsive adjustments for form */
         @media (max-width: 768px) {
             .pmpro-member-search-form {
                 margin: 15px;
@@ -223,6 +262,104 @@ function tsw_pmpro_search_form_styles() {
             .pmpro-member-search-form input[type="submit"] {
                 font-size: 0.95em;
                 padding: 10px 12px;
+            }
+        }
+
+        /* --- Search Results Styling --- */
+        .pmpro-member-search-results {
+            background-color: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 650px;
+            margin: 30px auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .pmpro-member-search-results h3 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 25px;
+            font-size: 1.6em;
+            font-weight: 700;
+            border-bottom: 2px solid #eeeeee;
+            padding-bottom: 15px;
+        }
+
+        .pmpro-member-search-results .no-results {
+            text-align: center;
+            color: #888888;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .pmpro-member-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid; /* Use grid for layout */
+            gap: 20px; /* Space between list items */
+        }
+
+        .pmpro-member-item {
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pmpro-member-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .pmpro-member-item h4 {
+            color: #0073aa;
+            font-size: 1.4em;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .pmpro-member-item h4 a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .pmpro-member-item h4 a:hover {
+            text-decoration: underline;
+        }
+
+        .pmpro-member-item p {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            color: #444444;
+        }
+
+        .pmpro-member-item p strong {
+            color: #222222;
+        }
+
+        /* Responsive adjustments for results */
+        @media (max-width: 768px) {
+            .pmpro-member-search-results {
+                margin: 15px;
+                padding: 20px;
+            }
+            .pmpro-member-search-results h3 {
+                font-size: 1.3em;
+            }
+            .pmpro-member-item {
+                padding: 15px;
+            }
+            .pmpro-member-item h4 {
+                font-size: 1.2em;
+            }
+            .pmpro-member-item p {
+                font-size: 0.9em;
             }
         }
     </style>
