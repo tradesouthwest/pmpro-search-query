@@ -26,7 +26,7 @@ Shortcode: The entire functionality is wrapped in a shortcode (&91;pmpro_custom_
 == Changelog ==
 
 = 1.0 =
-* original
+* original w/ workflows
 
 == Arbitrary section ==
 
