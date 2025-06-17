@@ -59,7 +59,7 @@ function tsw_pmpro_custom_search_filter( $query ) {
  * This is a fallback and good practice. If you've already set them up in PMPRO,
  * this section is not strictly necessary but harmless.
  */
-function pmpro_tsw_register_custom_user_fields() {
+function pmpro_csm_register_custom_user_fields() {
     // Before proceeding, check if Paid Memberships Pro is active.
     // This prevents fatal errors if PMPro is not installed or activated.
     if ( ! function_exists( 'pmpro_getOption' ) ) {
@@ -88,13 +88,13 @@ function pmpro_tsw_register_custom_user_fields() {
         // Fallback if PMPro directory page isn't explicitly set.
         // This assumes your theme might have a generic `/members/` or a custom archive template
         // that you will set up to handle member searches.
-        $form_action_url = '';
+        $form_action_url = home_url('/') . 'search-members/' . urlencode( get_query_var( 's' ) ); 
     }
 
     // --- Search Form HTML Generation ---
     // Start the HTML form.
     // The form uses GET method, parameters will be in the URL (e.g., ?ocupaci_n=Doctor).
-    $output .= '<form method="get" action="' . esc_url( home_url('/') . 'search-members/' ) . '">';
+    $output .= '<form method="get" action="' . esc_url( $form_action_url ) . '">';
     $output .= '<div class="pmpro-member-search-form">'; // Main container div for styling.
     $output .= '<h2>Buscar Miembros</h2>'; // Form title, updated for clarity
 
@@ -195,7 +195,7 @@ function pmpro_tsw_register_custom_user_fields() {
     return $output; // Return only the generated HTML for the form.
 }
 // register shortcode
-add_shortcode( 'pmpro_member_search_form', 'pmpro_tsw_register_custom_user_fields' );
+add_shortcode( 'pmpro_custom_user_search', 'pmpro_csm_register_custom_user_fields' );
 
 
 /**

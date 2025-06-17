@@ -1,6 +1,6 @@
 <?php
 /**
- * Template search members
+ * Template Name: Search Members
  *
  * This template handles displaying a list of PMPro members,
  * including filtering based on search parameters from the search form.
@@ -16,7 +16,7 @@ get_header();
     <?php 
     // Make sure PMPro functions are available. If PMPro is not active,
     // this template might still load but the PMPro-specific functions will not exist.
-    if ( ! function_exists( 'pmpro_get_members' ) ) {
+    if ( ! function_exists( 'pmpro_tsw_register_custom_user_fields' ) ) {
         echo 
             '<div class="pmpro-member-search-results">
                 <p class="no-results" style="color: red;">Error: Paid Memberships Pro is not active or not fully loaded. Cannot display member directory.</p>
@@ -29,14 +29,20 @@ get_header();
     <?php
     astra_primary_content_top(); ?>
     <?php 
-        if ( isset( $_GET['_wpnonce'] ) 
-        && !wp_verify_nonce(  sanitize_text_field( 
-        wp_unslash( $_GET['_wpnonce'], 'search-members' ) ) ) ) {
-            die( 'Security Check!' );
-    }
-    // Retrieve and sanitize search parameters from the URL.
-    // Ensure these names match the 'name' attributes in your search form.
-    $occupation_filter       = isset( $_GET['ocupaci_n'] ) 
+        $nonce = $_GET['_wpnonce'];
+        if ( ! wp_verify_nonce( $nonce, 'search-members' ) ) {
+        ?> </div>
+        <?php echo esc_html__( 'Security check', 'tsw-pmpro' );     
+        get_footer();
+        return; 
+            
+    } ?>
+    <?php
+    global $members;
+    /* Retrieve and sanitize search parameters from the URL.
+     * Ensure these names match the 'name' attributes in your search form.
+     */
+   $occupation_filter       = isset( $_GET['ocupaci_n'] ) 
                                ? sanitize_text_field( $_GET['ocupaci_n'] ) : '';
     $service_category_filter = isset( $_GET['categor_a_de_servicio'] ) 
                                ? sanitize_text_field( $_GET['categor_a_de_servicio'] ) : '';
@@ -86,9 +92,7 @@ get_header();
         );
     }
 
-    // Fetch members based on the constructed arguments.
-    $members = pmpro_get_members( $pmpro_args );
-
+   
     ?>
 
     <div id="primary-search" class="content-area">
@@ -97,7 +101,9 @@ get_header();
             <?php
             // You can optionally display the search form on the results page too.
             // This shortcode is defined in your functions.php or custom plugin.
-            //echo do_shortcode( '[pmpro_member_search_form]' );
+            echo do_shortcode( '[pmpro_member_search_form]' );
+             // Fetch members based on the constructed arguments.
+    $members = !function_exists( 'pmpro_get_members' ) ? null : pmpro_get_members( $pmpro_args );
             ?>
 
             <div class="pmpro-member-search-results">
