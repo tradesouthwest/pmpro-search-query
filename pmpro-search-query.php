@@ -20,7 +20,8 @@ function pmpro_csm_register_custom_user_fields() {
     // Before proceeding, check if Paid Memberships Pro is active.
     // This prevents fatal errors if PMPro is not installed or activated.
     if ( ! function_exists( 'pmpro_getOption' ) ) {
-        return '<p style="color: red; text-align: center;">Error: Paid Memberships Pro is not active. This form requires PMPro.</p>';
+        return '<p style="color: red; text-align: center;">Error: 
+        Paid Memberships Pro is not active. This form requires PMPro.</p>';
     }
 
     global $wpdb; // Access the WordPress database object.
@@ -44,27 +45,28 @@ function pmpro_csm_register_custom_user_fields() {
         // Fallback if PMPro directory page isn't explicitly set.
         // This assumes your theme might have a generic `/members/` or a custom archive template
         // that you will set up to handle member searches.
-        $form_action_url = '';
+        $form_action_url = '/archive.php';
     }
 
     // --- Search Form HTML Generation ---
     // Start the HTML form.
-    // The form uses GET method, meaning parameters will be in the URL (e.g., ?ocupaci_n=Doctor).
+    // The form uses GET method, parameters will be in the URL (e.g., ?ocupaci_n=Doctor).
     $output .= '<form method="get" action="' . esc_url( $form_action_url ) . '">';
     $output .= '<div class="pmpro-member-search-form">'; // Main container div for styling.
     $output .= '<h2>Buscar Miembros</h2>'; // Form title, updated for clarity
 
     // Loop through each defined searchable field to create a dropdown.
     foreach ( $searchable_fields as $meta_key => $label ) {
-        $unique_values_for_dropdown = array(); // Array to hold unique, processed values for the dropdown.
+        $unique_values_for_dropdown = array(); // Array to hold unique, values for the dropdown.
 
         // Query the WordPress user meta table to get all distinct meta_values
         // for the current meta_key. This fetches the raw data as stored.
         $query = $wpdb->prepare(
-            "SELECT DISTINCT meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value != '' ORDER BY meta_value ASC",
+            "SELECT DISTINCT meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s 
+            AND meta_value != '' ORDER BY meta_value ASC",
             $meta_key
         );
-        $raw_options = $wpdb->get_col( $query ); // Execute query and get results as an array of column values.
+        $raw_options = $wpdb->get_col( $query ); // Execute query and get an array of column values.
 
         // Process raw options to handle potential serialization and extract clean alphanumeric values.
         foreach ( $raw_options as $option_value ) {
@@ -78,9 +80,10 @@ function pmpro_csm_register_custom_user_fields() {
                 foreach ( $unserialized_value as $sub_value ) {
                     // Ensure the sub-value is a string and trim whitespace.
                     $cleaned_sub_value = trim( strval( $sub_value ) );
-                    // Validate that the cleaned value is not empty and contains allowed alphanumeric/punctuation characters.
+                    // Validate cleaned value is not empty and contains alphanumeric/punctuation characters.
                     // The regex allows letters, numbers, spaces, hyphens, underscores, periods, commas, parentheses, and ampersands.
-                    if ( ! empty( $cleaned_sub_value ) && preg_match( '/^[a-zA-Z0-9\s\-_.,()&]+$/', $cleaned_sub_value ) ) {
+                    if ( ! empty( $cleaned_sub_value ) 
+                        && preg_match( '/^[a-zA-Z0-9\s\-_.,()&]+$/', $cleaned_sub_value ) ) {
                         $unique_values_for_dropdown[] = $cleaned_sub_value;
                     }
                 }
@@ -88,7 +91,8 @@ function pmpro_csm_register_custom_user_fields() {
                 // If it's a single string value (or unserialized to a non-array type),
                 // clean it and add it directly.
                 $cleaned_value = trim( strval( $unserialized_value ) );
-                if ( ! empty( $cleaned_value ) && preg_match( '/^[a-zA-Z0-9\s\-_.,()&]+$/', $cleaned_value ) ) {
+                if ( ! empty( $cleaned_value ) 
+                    && preg_match( '/^[a-zA-Z0-9\s\-_.,()&]+$/', $cleaned_value ) ) {
                     $unique_values_for_dropdown[] = $cleaned_value;
                 }
             }
@@ -110,14 +114,18 @@ function pmpro_csm_register_custom_user_fields() {
 
         // Build the HTML for the current dropdown field.
         $output .= '<div class="form-field">';
-        $output .= '<label for="' . esc_attr( $meta_key ) . '">' . esc_html( $label ) . ':</label>';
-        $output .= '<select name="' . esc_attr( $meta_key ) . '" id="' . esc_attr( $meta_key ) . '" class="pmpro-field-select">';
+        $output .= '<label for="' . esc_attr( $meta_key ) . '">
+                   ' . esc_html( $label ) . ':</label>';
+        $output .= '<select name="' . esc_attr( $meta_key ) . '" id="' . esc_attr( $meta_key ) . '" 
+                   class="pmpro-field-select">';
         foreach ( $options as $value => $display ) {
             // Determine if the current option should be 'selected'.
             // This is useful if the form is reloaded after submission,
             // maintaining the user's previous selection.
-            $selected = ( isset( $_GET[ $meta_key ] ) && $_GET[ $meta_key ] === $value ) ? 'selected' : '';
-            $output .= '<option value="' . esc_attr( $value ) . '" ' . $selected . '>' . esc_html( $display ) . '</option>';
+            $selected = ( isset( $_GET[ $meta_key ] ) && $_GET[ $meta_key ] === $value ) 
+                        ? 'selected' : '';
+            $output .= '<option value="' . esc_attr( $value ) . '" ' . $selected . '>
+                       ' . esc_html( $display ) . '</option>';
         }
         $output .= '</select>';
         $output .= '</div>'; // Close .form-field
@@ -126,7 +134,10 @@ function pmpro_csm_register_custom_user_fields() {
     // Optional: Add a general keyword search input, suitable for fields like 'mi_biograf_a'.
     $output .= '<div class="form-field">';
     $output .= '<label for="s">Palabras Clave:</label>';
-    $output .= '<input type="text" name="s" id="s" value="' . ( isset( $_GET['s'] ) ? esc_attr( $_GET['s'] ) : '' ) . '" placeholder="Buscar por nombre, biografía o palabra clave general" class="pmpro-field-text">';
+    $output .= '<input type="text" name="s" id="s" value="' . ( isset( $_GET['s'] ) 
+               ? esc_attr( $_GET['s'] ) : '' ) . '" 
+               placeholder="Buscar por nombre, biografía o palabra clave general" 
+               class="pmpro-field-text">';
     $output .= '</div>';
 
     // Add the submit button.
