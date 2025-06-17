@@ -11,6 +11,15 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
+add_filter( 'page_template', 'tsw_pmpro_page_template' );
+function tsw_pmpro_page_template( $page_template )
+{
+    if ( is_page( 'search-members' ) ) {
+        $page_template = dirname( __FILE__ ) . '/templates/search-members.php';
+    }
+    return $page_template;
+}
+
 /**
  * Register the custom user meta fields if they don't already exist through PMPRO settings.
  * This is a fallback and good practice. If you've already set them up in PMPRO,
@@ -45,7 +54,7 @@ function pmpro_csm_register_custom_user_fields() {
         // Fallback if PMPro directory page isn't explicitly set.
         // This assumes your theme might have a generic `/members/` or a custom archive template
         // that you will set up to handle member searches.
-        $form_action_url = '/archive.php';
+        $form_action_url = '/search-members';
     }
 
     // --- Search Form HTML Generation ---

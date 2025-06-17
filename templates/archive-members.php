@@ -5,9 +5,6 @@
  * This template handles displaying a list of PMPro members,
  * including filtering based on search parameters from the search form.
  */
-
-get_header(); // Or include your theme's header
-
 // Load WordPress header, including necessary scripts and styles.
 get_header();
 
