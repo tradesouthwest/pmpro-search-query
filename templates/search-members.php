@@ -1,6 +1,6 @@
 <?php
 /**
- * Template for members search archive
+ * Template search members
  *
  * This template handles displaying a list of PMPro members,
  * including filtering based on search parameters from the search form.
@@ -27,9 +27,14 @@ get_header();
     ?>
 <div id="primary" <?php astra_primary_class(); ?>>
     <?php
-    astra_primary_content_top(); 
-   
-
+    astra_primary_content_top(); ?>
+    <?php    
+        if ( isset( $_GET['_wpnonce'] ) 
+        && !wp_verify_nonce(  sanitize_text_field( wp_unslash( $_GET['_wpnonce'], 'search-members' ) ) ) ) {
+        die( 'Security Check!' );
+    } ?>
+    <?php
+    if( 'POST' == $_SERVER['REQUEST_METHOD']   { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
     // Retrieve and sanitize search parameters from the URL.
     // Ensure these names match the 'name' attributes in your search form.
     $occupation_filter       = isset( $_GET['ocupaci_n'] ) 
@@ -37,7 +42,7 @@ get_header();
     $service_category_filter = isset( $_GET['categor_a_de_servicio'] ) 
                                ? sanitize_text_field( $_GET['categor_a_de_servicio'] ) : '';
     $keyword_filter          = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
-
+    }
     global $wpdb; // Access the WordPress database object for specific queries if needed (like esc_like).
 
     // Prepare arguments for pmpro_get_members(). This function is best for querying PMPro users.

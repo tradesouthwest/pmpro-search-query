@@ -44,14 +44,6 @@ function tsw_pmpro_load_plugin_textdomain()
 }
 
 // templating
-add_filter( 'page_template', 'tsw_pmpro_page_template' );
-function tsw_pmpro_page_template( $page_template )
-{
-    if ( is_page( 'search-members' ) ) {
-        $page_template = basename( dirname(__FILE__) ) .'/templates/search-members.php';
-    }
-    return $page_template;
-}
 
 /**
  * Register the custom user meta fields if they don't already exist through PMPRO settings.
@@ -87,7 +79,7 @@ function pmpro_csm_register_custom_user_fields() {
         // Fallback if PMPro directory page isn't explicitly set.
         // This assumes your theme might have a generic `/members/` or a custom archive template
         // that you will set up to handle member searches.
-        $form_action_url = '/';
+        $form_action_url = '/search-members';
     }
 
     // --- Search Form HTML Generation ---
@@ -183,7 +175,7 @@ function pmpro_csm_register_custom_user_fields() {
     $output .= '</div>';
 
     // Add the submit button.
-    $output .= '<div class="form-field form-submit">';
+    $output .= '<div class="form-field form-submit">' . wp_nonce_field( 'search-members' );
     $output .= '<input type="submit" value="Buscar Miembros" class="pmpro-submit-button">';
     $output .= '</div>';
 
