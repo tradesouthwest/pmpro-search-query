@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: PMPro Custom User Search
- * Description: A custom search tool for Paid Memberships Pro users. Use shortcode (&91;pmpro_custom_user_search]) so you can easily place it on any page or post.
+ * Description: A custom search tool for Paid Memberships Pro users. Use shortcode (&91;pmpro_member_search_form]) so you can easily place it on any page or post.
  * Version: 1.0
  * Author: Tradesouthwest
  */
