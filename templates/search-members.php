@@ -152,7 +152,8 @@ get_header();
                                         <p><strong>Ocupación:</strong> <?php echo esc_html( $occupation_val ); ?></p>
                                     <?php endif; ?>
                                     <?php if ( ! empty( $service_category_val ) ) : ?>
-                                        <p><strong>Categoría de servicio:</strong> <?php echo $service_category_val; ?></p>
+                                        <p><strong><?php esc_html_e('Categoría de servicio: ', 'tsw-pmpro'); ?></strong> 
+                                            <?php echo esc_html( $service_category_val ); ?></p>
                                     <?php endif; ?>
                                     <?php if ( ! empty( $biography_val ) ) : ?>
                                         <p><strong>Mi biografía:</strong> <?php echo wp_kses_post( $biography_val ); ?></p>
