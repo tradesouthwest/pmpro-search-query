@@ -11,11 +11,44 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
+// Start the plugin when it is loaded.
+register_activation_hook(   __FILE__, 'tsw_pmpro_plugin_activation' );
+register_deactivation_hook( __FILE__, 'tsw_pmpro_plugin_deactivation' );
+register_uninstall_hook(    __FILE__, 'uninstall' );
+/**
+ * Activate/deactivate hooks
+ * 
+ */
+function tsw_pmpro_plugin_activation() 
+{
+   return false;
+}
+function tsw_pmpro_plugin_deactivation() 
+{
+    return false;
+}
+
+/**
+ * Define the locale for this plugin for internationalization.
+ * Set the domain and register the hook with WordPress.
+ *
+ * @uses slug `tsw_pmpro`
+ */
+add_action( 'plugins_loaded', 'tsw_pmpro_load_plugin_textdomain' );
+
+function tsw_pmpro_load_plugin_textdomain() 
+{
+
+    $plugin_dir = basename( dirname(__FILE__) ) .'/languages';
+                  load_plugin_textdomain( 'tsw-pmpro', false, $plugin_dir );
+}
+
+// templating
 add_filter( 'page_template', 'tsw_pmpro_page_template' );
 function tsw_pmpro_page_template( $page_template )
 {
     if ( is_page( 'search-members' ) ) {
-        $page_template = dirname( __FILE__ ) . '/templates/search-members.php';
+        $page_template = basename( dirname(__FILE__) ) .'/templates/search-members.php';
     }
     return $page_template;
 }
@@ -29,8 +62,8 @@ function pmpro_csm_register_custom_user_fields() {
     // Before proceeding, check if Paid Memberships Pro is active.
     // This prevents fatal errors if PMPro is not installed or activated.
     if ( ! function_exists( 'pmpro_getOption' ) ) {
-        return '<p style="color: red; text-align: center;">Error: 
-        Paid Memberships Pro is not active. This form requires PMPro.</p>';
+        return '<p style="color: red; text-align: center;">'. esc_html__( 'Error: 
+        Paid Memberships Pro is not active. This form requires PMPro.', 'tsw-pmpro') .'</p>';
     }
 
     global $wpdb; // Access the WordPress database object.
@@ -54,7 +87,7 @@ function pmpro_csm_register_custom_user_fields() {
         // Fallback if PMPro directory page isn't explicitly set.
         // This assumes your theme might have a generic `/members/` or a custom archive template
         // that you will set up to handle member searches.
-        $form_action_url = '/search-members';
+        $form_action_url = '/';
     }
 
     // --- Search Form HTML Generation ---
@@ -169,6 +202,7 @@ add_shortcode( 'pmpro_custom_user_search', 'pmpro_csm_register_custom_user_field
  * For more complex styling, consider enqueuing a separate stylesheet.
  */
 function tsw_pmpro_search_form_styles() {
+    if ( is_page( '4284') || is_page('search-members')) {
     echo '
     <style>
         /* Basic reset/base for consistency */
@@ -384,6 +418,7 @@ function tsw_pmpro_search_form_styles() {
         }
     </style>
     ';
+    }
 }
 // Add the styling function to the WordPress head.
 add_action( 'wp_head', 'tsw_pmpro_search_form_styles' );

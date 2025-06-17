@@ -1,6 +1,6 @@
 <?php
 /**
- * members search archive
+ * Template for members search archive
  *
  * This template handles displaying a list of PMPro members,
  * including filtering based on search parameters from the search form.
@@ -8,34 +8,41 @@
 
 // Load WordPress header, including necessary scripts and styles.
 get_header();
-if ( astra_page_layout() === 'left-sidebar' ) { ?>
+    if ( astra_page_layout() === 'left-sidebar' ) { ?>
 
-	<?php get_sidebar(); ?>
+        <?php get_sidebar(); ?>
 
-<?php } ?>
-<div id="primary" <?php astra_primary_class(); ?>>
-    <?php
-    astra_primary_content_top(); ?>
+    <?php } ?>
     <?php 
     // Make sure PMPro functions are available. If PMPro is not active,
     // this template might still load but the PMPro-specific functions will not exist.
     if ( ! function_exists( 'pmpro_get_members' ) ) {
-        echo '<div class="pmpro-member-search-results"><p class="no-results" style="color: red;">Error: Paid Memberships Pro is not active or not fully loaded. Cannot display member directory.</p></div>';
+        echo 
+            '<div class="pmpro-member-search-results">
+                <p class="no-results" style="color: red;">Error: Paid Memberships Pro is not active or not fully loaded. Cannot display member directory.</p>
+            </div>';
         get_footer();
         return; // Stop execution if PMPro is not available.
     }
+    ?>
+<div id="primary" <?php astra_primary_class(); ?>>
+    <?php
+    astra_primary_content_top(); 
+   
 
     // Retrieve and sanitize search parameters from the URL.
     // Ensure these names match the 'name' attributes in your search form.
-    $occupation_filter       = isset( $_GET['ocupaci_n'] ) ? sanitize_text_field( $_GET['ocupaci_n'] ) : '';
-    $service_category_filter = isset( $_GET['categor_a_de_servicio'] ) ? sanitize_text_field( $_GET['categor_a_de_servicio'] ) : '';
+    $occupation_filter       = isset( $_GET['ocupaci_n'] ) 
+                               ? sanitize_text_field( $_GET['ocupaci_n'] ) : '';
+    $service_category_filter = isset( $_GET['categor_a_de_servicio'] ) 
+                               ? sanitize_text_field( $_GET['categor_a_de_servicio'] ) : '';
     $keyword_filter          = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
 
     global $wpdb; // Access the WordPress database object for specific queries if needed (like esc_like).
 
     // Prepare arguments for pmpro_get_members(). This function is best for querying PMPro users.
     $pmpro_args = array(
-        'limit'        => 20, // Number of results to display per page. Adjust as needed.
+        'limit'        => 40, // Number of results to display per page. Adjust as needed.
         'start'        => 0,  // Offset for pagination (can be extended for full pagination).
         'order_by'     => 'display_name', // Order results by user's display name.
         'order'        => 'ASC', // Ascending order.
@@ -86,7 +93,7 @@ if ( astra_page_layout() === 'left-sidebar' ) { ?>
             <?php
             // You can optionally display the search form on the results page too.
             // This shortcode is defined in your functions.php or custom plugin.
-            echo do_shortcode( '[pmpro_member_search_form]' );
+            //echo do_shortcode( '[pmpro_member_search_form]' );
             ?>
 
             <div class="pmpro-member-search-results">
@@ -97,7 +104,8 @@ if ( astra_page_layout() === 'left-sidebar' ) { ?>
                         <?php
                         foreach ( $members as $member ) :
                             $user_id = $member->ID;
-                            $user_data = get_userdata( $user_id ); // Get the full user data object for display name.
+                            // Get the full user data object for display name.
+                            $user_data = get_userdata( $user_id ); 
 
                             // Retrieve custom field values for display.
                             // get_user_meta will return 'false' if the meta key doesn't exist,
@@ -111,7 +119,9 @@ if ( astra_page_layout() === 'left-sidebar' ) { ?>
                                 $unserialized_service_category = maybe_unserialize( $service_category_val );
                                 if ( is_array( $unserialized_service_category ) ) {
                                     // If it's an array, implode it into a comma-separated string for display.
-                                    $service_category_val = implode( ', ', array_map( 'esc_html', $unserialized_service_category ) );
+                                    $service_category_val = implode( 
+                                        ', ', array_map( 'esc_html', $unserialized_service_category ) 
+                                    );
                                 } else {
                                     // If unserialized but not an array (e.g., a single value that was just serialized), escape it.
                                     $service_category_val = esc_html( $unserialized_service_category );
