@@ -546,7 +546,22 @@ class PMPro_Custom_Member_Search {
             transform: translateY(0);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-
+        .pmpro_search_reset_button {
+            width: min-content; /* Auto width based on content */
+            padding: 8px 15px;
+            background-color:rgb(160, 53, 55); 
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: block; /* Make it a block to center with margin: auto */
+            margin: 20px auto 0; /* Top margin for spacing, auto for horizontal centering */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            float: left;
+        }
         /* Responsive adjustments for form */
         @media (max-width: 768px) {
             .pmpro-custom-search-form {

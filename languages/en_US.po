@@ -1,9 +1,8 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: tsw-pmpro\n"
 "POT-Creation-Date: 2025-06-18 11:15-0700\n"
-"PO-Revision-Date: 2025-06-06 20:13-0700\n"
+"PO-Revision-Date: 2025-06-18 11:16-0700\n"
 "Last-Translator: \n"
 "Language-Team: Tradesouthwest\n"
 "Language: en_US\n"
@@ -19,8 +18,8 @@ msgstr ""
 
 #: pmpro-search-query.php:27
 msgid ""
-"PMPro Custom Member Search requires Paid Memberships Pro to be installed "
-"and activated."
+"PMPro Custom Member Search requires Paid Memberships Pro to be installed and "
+"activated."
 msgstr ""
 
 #: pmpro-search-query.php:34
@@ -98,8 +97,7 @@ msgid "Siguiente &raquo;"
 msgstr ""
 
 #: pmpro-search-query.php:441
-msgid ""
-"No se encontraron miembros que coincidan con los criterios de búsqueda."
+msgid "No se encontraron miembros que coincidan con los criterios de búsqueda."
 msgstr ""
 
 #: templates/paid-memberships-pro/pmpro-member-directory/directory.php:30
