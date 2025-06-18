@@ -159,8 +159,6 @@ class PMPro_Custom_Member_Search {
             <form role="search" method="get" class="pmpro-custom-search-form" action="<?php echo esc_url($form_action); ?>">
                 <h2><?php esc_html_e('Buscar Miembros', 'pmpro-custom-member-search'); ?></h2>
 
-                
-
                 <div class="pmpro_search_box">
                     <label for="categor_a_de_servicio"><?php esc_html_e('Categoría de Servicio', 'pmpro-custom-member-search'); ?>:</label>
                     <select name="categor_a_de_servicio" id="categor_a_de_servicio">
@@ -173,7 +171,7 @@ class PMPro_Custom_Member_Search {
                     </select>
                 </div>
 
-                <div class="pmpro_search_box">
+                <div class="pmpro_search_box" style="display: none;">
                     <label for="ocupaci_n"><?php esc_html_e('Ocupación', 'pmpro-custom-member-search'); ?>:</label>
                     <select name="ocupaci_n" id="ocupaci_n">
                         <option value="">-- <?php esc_html_e('Seleccione una ocupación', 'pmpro-custom-member-search'); ?> --</option>
@@ -186,8 +184,8 @@ class PMPro_Custom_Member_Search {
                 </div>
             
 
-                <div class="pmpro_search_box" style="display: none;">
-                    <label for="mi_biograf_a"><?php esc_html_e('Mi Biografía', 'pmpro-custom-member-search'); ?>:</label>
+                <div class="pmpro_search_box">
+                    <label for="mi_biograf_a"><?php esc_html_e('Profesional', 'pmpro-custom-member-search'); ?>:</label>
                     <input type="text" name="mi_biograf_a" id="mi_biograf_a" value="<?php echo esc_attr($biografia_val); ?>" />
                 </div>
             
