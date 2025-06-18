@@ -51,6 +51,8 @@ class PMPro_Custom_Member_Search {
 
     public function __construct() {
         add_action('init', array($this, 'init_shortcode'));
+        // Add the styling function to the WordPress head.
+        add_action( 'wp_head', array($this, 'tsw_pmpro_search_form_styles' ));
     }
 
     /**
@@ -206,6 +208,38 @@ class PMPro_Custom_Member_Search {
         return ob_get_clean(); // Return the buffered content.
     }
 
+    public function try_pmpro_get_member_profile_url($user_id) {
+        error_log("pmpro_get_member_profile_url called for user ID: " . $user_id);
+    
+        if (empty($user_id) || !is_numeric($user_id)) {
+            error_log("pmpro_get_member_profile_url: Invalid user ID.");
+            return '';
+        }
+    
+        // Check if member profile page is set
+        $member_profile_page_id = pmpro_getOption('member_profile_page_id');
+        if (empty($member_profile_page_id)) {
+            error_log("pmpro_get_member_profile_url: Member profile page ID not set in PMPro options.");
+            return '';
+        }
+        $member_profile_page_url = get_permalink($member_profile_page_id);
+        if (empty($member_profile_page_url)) {
+            error_log("pmpro_get_member_profile_url: Could not get permalink for page ID: " . $member_profile_page_id);
+            return '';
+        }
+    
+        // Add any other checks you find within the function, e.g., membership level checks
+        // Example (hypothetical, PMPro might do this differently):
+        // if (!pmpro_hasMembershipLevel(null, $user_id)) {
+        //     error_log("pmpro_get_member_profile_url: User ID " . $user_id . " does not have an active membership level required for profile.");
+        //     return '';
+        // }
+    
+        $url = add_query_arg('pu', $user_id, $member_profile_page_url);
+        error_log("pmpro_get_member_profile_url: Generated URL: " . $url);
+        return $url;
+    }
+
     /**
      * Displays search results based on submitted query parameters.
      *
@@ -302,9 +336,9 @@ class PMPro_Custom_Member_Search {
             unset($args['meta_query']); // If only 'relation' is left, remove it.
         }
 
-
         // --- DEBUG: WP_User_Query Arguments ---
         error_log('[PMPRO_CUSTOM_SEARCH DEBUG] WP_User_Query Args: ' . print_r($args, true));
+
 
         $user_query = new WP_User_Query($args);
 
@@ -318,7 +352,7 @@ class PMPro_Custom_Member_Search {
 
 
         if (!empty($user_query->results)) {
-            echo '<h3 class="pmpro-search-results-title">' . esc_html__('Resultados de la Búsqueda:', 'pmpro-custom-member-search') . '</h3>';
+            echo '<h4 class="pmpro-search-results-title">' . esc_html__('Resultados de la Búsqueda:', 'pmpro-custom-member-search') . '</h4>';
             echo '<div class="pmpro_member_directory-items pmpro_cards_wrap">'; // Wrapper for cards.
             foreach ($user_query->results as $user) {
                 // Fetch user display name and meta data.
@@ -342,14 +376,18 @@ class PMPro_Custom_Member_Search {
                 $member_profile_url = '';
                 if (function_exists('pmpro_get_member_profile_url')) {
                     $member_profile_url = pmpro_get_member_profile_url($user_id);
-                }
+                } else {
+                    $member_profile_url = esc_url( 'https://conexionpro.us/perfil/' . $user->user_nicename);
+                } 
                 ?>
                 <div class="pmpro_member_directory-item pmpro_card">
                     <div class="pmpro_card_body">
                         <?php if (!empty($member_profile_url)) : ?>
-                            <h3><a href="<?php echo esc_url($member_profile_url); ?>"><?php echo esc_html($user_display_name); ?></a></h3>
+                            <h3><a style="color:green" href="<?php echo esc_url($member_profile_url); ?>"><?php echo esc_html($user_display_name); ?></a></h3>
                         <?php else : ?>
-                            <h3><?php echo esc_html($user_display_name); ?></h3>
+                            <h3><?php
+                                echo esc_html($user_display_name); ?></h3>
+                            
                         <?php endif; ?>
 
                         <ul class="pmpro_member_meta">
@@ -360,7 +398,7 @@ class PMPro_Custom_Member_Search {
                                 <li><strong><?php esc_html_e('Categoría de Servicio:', 'pmpro-custom-member-search'); ?></strong> <?php echo $user_categoria_servicio_display; ?></li>
                             <?php endif; ?>
                             <?php if (!empty($user_biografia)) : ?>
-                                <li><strong><?php esc_html_e('Biografía:', 'pmpro-custom-member-search'); ?></strong> <?php echo esc_html($user_biografia); ?></li>
+                                <li class="biography-search"><strong><?php esc_html_e('Biografía:', 'pmpro-custom-member-search'); ?></strong> <?php echo esc_html($user_biografia); ?></li>
                             <?php endif; ?>
                             <?php
                             // Optionally display membership level.
@@ -404,6 +442,230 @@ class PMPro_Custom_Member_Search {
         }
         // --- DEBUG: End of display_search_results ---
         error_log('[PMPRO_CUSTOM_SEARCH DEBUG] End of display_search_results.');
+    }
+    /**
+     * Adds basic CSS styling for the search form and results.
+     * This function hooks into 'wp_head' to output styles directly into the <head> section.
+     * For more complex styling, consider enqueuing a separate stylesheet.
+     */
+    public function tsw_pmpro_search_form_styles() {
+        global $post;
+        if ( has_shortcode( $post->post_content, 'pmpro_custom_member_search' ) ) {
+        echo '<style id="pmpro-custom-search">
+         /* Basic reset/base for consistency */
+         .pmpro-custom-member-search-wrap *, .pmpro-custom-search-results * {
+            box-sizing: border-box;
+            font-family: "Inter", sans-serif;
+        }
+        /* Main form container styling */
+        .pmpro-custom-member-search-wrap {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 650px;
+            margin: 30px auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 18px; /* Space between form fields */
+        }
+
+        /* Form title */
+        .pmpro-custom-search-form h2 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        /* Individual form field container */
+        .pmpro-custom-search-form .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Labels for fields */
+        .pmpro-custom-search-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555555;
+            font-size: 0.95em;
+        }
+
+        /* Select dropdowns and text inputs */
+        .pmpro-custom-search-form select,
+        .pmpro-custom-search-form input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            font-size: 1.05em;
+            color: #333333;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .pmpro-custom-search-form select:focus,
+        .pmpro-custom-search-form input[type="text"]:focus {
+            border-color: #0073aa; /* WordPress blue on focus */
+            box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.2);
+            outline: none;
+        }
+
+        /* Placeholder text color */
+        .pmpro-custom-search-form input[type="text"]::placeholder {
+            color: #aaaaaa;
+        }
+
+        /* Submit button styling */
+        .pmpro-custom-search-form input[type="submit"] {
+            width: auto; /* Auto width based on content */
+            padding: 12px 25px;
+            background-color: #0073aa; /* WordPress default blue */
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: block; /* Make it a block to center with margin: auto */
+            margin: 20px auto 0; /* Top margin for spacing, auto for horizontal centering */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .pmpro-custom-search-form input[type="submit"]:hover {
+            background-color: #005f88; /* Darker blue on hover */
+            transform: translateY(-1px); /* Slight lift effect */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .pmpro-custom-search-form input[type="submit"]:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive adjustments for form */
+        @media (max-width: 768px) {
+            .pmpro-custom-search-form {
+                margin: 15px;
+                padding: 20px;
+            }
+            .pmpro-custom-search-form h2 {
+                font-size: 1.5em;
+                margin-bottom: 20px;
+            }
+            .pmpro-custom-search-form select,
+            .pmpro-custom-search-form input[type="text"],
+            .pmpro-custom-search-form input[type="submit"] {
+                font-size: 0.95em;
+                padding: 10px 12px;
+            }
+        }
+
+        /* --- Search Results Styling --- */
+        .pmpro-member-search-results {
+            background-color: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 650px;
+            margin: 30px auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .pmpro-member-search-results h3 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 25px;
+            font-size: 1.6em;
+            font-weight: 700;
+            border-bottom: 2px solid #eeeeee;
+            padding-bottom: 15px;
+        }
+
+        .pmpro-member-search-results .no-results {
+            text-align: center;
+            color: #888888;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .pmpro-member-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid; /* Use grid for layout */
+            gap: 20px; /* Space between list items */
+        }
+
+        .pmpro-member-item {
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pmpro-member-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .pmpro-member-item h4 {
+            color: #0073aa;
+            font-size: 1.4em;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .pmpro-member-item h4 a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .pmpro-member-item h4 a:hover {
+            text-decoration: underline;
+        }
+
+        .pmpro-member-item p {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            color: #444444;
+        }
+
+        .pmpro-member-item p strong {
+            color: #222222;
+        }
+
+        /* Responsive adjustments for results */
+        @media (max-width: 768px) {
+            .pmpro-member-search-results {
+                margin: 15px;
+                padding: 20px;
+            }
+            .pmpro-member-search-results h3 {
+                font-size: 1.3em;
+            }
+            .pmpro-member-item {
+                padding: 15px;
+            }
+            .pmpro-member-item h4 {
+                font-size: 1.2em;
+            }
+            .pmpro-member-item p {
+                font-size: 0.9em;
+            }
+        }
+            </style>';
+        } else {
+            return;
+        }
     }
 }
 
