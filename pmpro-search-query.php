@@ -159,17 +159,7 @@ class PMPro_Custom_Member_Search {
             <form role="search" method="get" class="pmpro-custom-search-form" action="<?php echo esc_url($form_action); ?>">
                 <h2><?php esc_html_e('Buscar Miembros', 'pmpro-custom-member-search'); ?></h2>
 
-                <div class="pmpro_search_box">
-                    <label for="ocupaci_n"><?php esc_html_e('Ocupación', 'pmpro-custom-member-search'); ?>:</label>
-                    <select name="ocupaci_n" id="ocupaci_n">
-                        <option value="">-- <?php esc_html_e('Seleccione una ocupación', 'pmpro-custom-member-search'); ?> --</option>
-                        <?php foreach ($ocupacion_options as $option) : ?>
-                            <option value="<?php echo esc_attr($option); ?>" <?php selected($ocupacion_val, $option); ?>>
-                                <?php echo esc_html($option); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                
 
                 <div class="pmpro_search_box">
                     <label for="categor_a_de_servicio"><?php esc_html_e('Categoría de Servicio', 'pmpro-custom-member-search'); ?>:</label>
@@ -184,10 +174,23 @@ class PMPro_Custom_Member_Search {
                 </div>
 
                 <div class="pmpro_search_box">
+                    <label for="ocupaci_n"><?php esc_html_e('Ocupación', 'pmpro-custom-member-search'); ?>:</label>
+                    <select name="ocupaci_n" id="ocupaci_n">
+                        <option value="">-- <?php esc_html_e('Seleccione una ocupación', 'pmpro-custom-member-search'); ?> --</option>
+                        <?php foreach ($ocupacion_options as $option) : ?>
+                            <option value="<?php echo esc_attr($option); ?>" <?php selected($ocupacion_val, $option); ?>>
+                                <?php echo esc_html($option); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            
+
+                <div class="pmpro_search_box" style="display: none;">
                     <label for="mi_biograf_a"><?php esc_html_e('Mi Biografía', 'pmpro-custom-member-search'); ?>:</label>
                     <input type="text" name="mi_biograf_a" id="mi_biograf_a" value="<?php echo esc_attr($biografia_val); ?>" />
                 </div>
-
+            
                 <div class="pmpro_search_box pmpro_search_buttons">
                     <?php wp_nonce_field('pmpro_custom_member_search_nonce', 'pmpro_custom_search_nonce_field'); ?>
                     <input type="submit" value="<?php esc_attr_e('Buscar', 'pmpro-custom-member-search'); ?>" />
