@@ -3,7 +3,7 @@
  * Plugin Name: PMPro Seach Query
  * Plugin URI: hhttps://github.com/tradesouthwest/pmpro-search-query/
  * Description: Extends PMPro Member Directory search to include custom user meta fields: ocupación, categoría de servicio, and biografía.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: Tradesouthwest
  * License: GPL v2 or later
  *
