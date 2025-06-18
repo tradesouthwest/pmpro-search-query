@@ -4,7 +4,7 @@ Donate link: https://github.com/tradesouthwest/wordpress-client/new/master/Exper
 Tags: comments, help, tools, maintenance
 Requires at least: 4.9
 Tested up to: 6.8
-Stable tag: 1.0
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.htm
 
@@ -20,7 +20,7 @@ Shortcode: The entire functionality is wrapped in a shortcode (&91;pmpro_custom_
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
-
+servicios empresariales
 == Screenshots ==
 
 == Changelog ==
@@ -29,4 +29,6 @@ Shortcode: The entire functionality is wrapped in a shortcode (&91;pmpro_custom_
 * original w/ workflows
 
 == Arbitrary section ==
-
+plugins/borderless/borderless.php
+https://gemini.google.com/app/4f2baf2d8831bef8
+https://claude.ai/chat/c9e7603c-aed7-411e-83dc-7edb089b5692
