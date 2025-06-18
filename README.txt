@@ -29,6 +29,3 @@ servicios empresariales
 * original w/ workflows
 
 == Arbitrary section ==
-plugins/borderless/borderless.php
-https://gemini.google.com/app/4f2baf2d8831bef8
-https://claude.ai/chat/c9e7603c-aed7-411e-83dc-7edb089b5692
