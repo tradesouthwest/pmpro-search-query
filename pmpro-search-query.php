@@ -186,7 +186,9 @@ class PMPro_Custom_Member_Search {
 
                 <div class="pmpro_search_box">
                     <label for="mi_biograf_a"><?php esc_html_e('Profesional', 'pmpro-custom-member-search'); ?>:</label>
-                    <input type="text" name="mi_biograf_a" id="mi_biograf_a" value="<?php echo esc_attr($biografia_val); ?>" />
+                    <input type="text" name="mi_biograf_a" id="mi_biograf_a" 
+                    placeholder="<?php esc_attr_e('Nombre profesional', 'pmpro-custom-member-search'); ?>" 
+                    value="<?php echo esc_attr($biografia_val); ?>" />
                 </div>
             
                 <div class="pmpro_search_box pmpro_search_buttons">
@@ -301,7 +303,7 @@ class PMPro_Custom_Member_Search {
 
             if (!empty($biografia_val)) {
                 $meta_query_array[] = array(
-                    'key'     => 'mi_biograf_a',
+                    'key'     => 'user_name',
                     'value'   => $biografia_val,
                     'compare' => 'LIKE',
                 );
@@ -309,13 +311,13 @@ class PMPro_Custom_Member_Search {
             }
 
             if (!empty($categoria_servicio_val)) {
-                $escaped_val = $wpdb->esc_like($categoria_servicio_val);
+                //$escaped_val = $wpdb->esc_like($categoria_servicio_val);
                 $meta_query_array[] = array(
                     'key'     => 'categor_a_de_servicio',
-                    'value'   => '%"' . $escaped_val . '"%', // This pattern should capture string values in serialized arrays.
+                    'value'   => $categoria_servicio_val, //'%' . $escaped_val . '%', // This looks for "value" anywhere in the string
                     'compare' => 'LIKE',
                 );
-                error_log('[PMPRO_CUSTOM_SEARCH DEBUG] Adding categor_a_de_servicio to meta_query: searching for pattern "%"' . $escaped_val . '"%" with LIKE.');
+                error_log('[PMPRO_CUSTOM_SEARCH DEBUG] Adding categor_a_de_servicio to meta_query: searching for pattern "%"' . $categoria_servicio_val . '"%" with LIKE.');
             }
         } else {
              error_log('[PMPRO_CUSTOM_SEARCH DEBUG] No specific search terms provided, showing all users if not paginated (PMPro filter temporarily removed).');
@@ -361,7 +363,7 @@ class PMPro_Custom_Member_Search {
                 $user_display_name = $user->display_name;
 
                 $user_ocupacion = get_user_meta($user_id, 'ocupaci_n', true);
-                $user_biografia = get_user_meta($user_id, 'mi_biograf_a', true);
+                $user_biografia = get_user_meta($user_id, 'display_name', true);
                 $user_categoria_servicio_raw = get_user_meta($user_id, 'categor_a_de_servicio', true);
 
                 // Unserialize 'categor_a_de_servicio' for display.
