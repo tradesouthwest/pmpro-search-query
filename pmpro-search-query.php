@@ -302,13 +302,45 @@ class PMPro_Custom_Member_Search {
             }
 
             if (!empty($biografia_val)) {
-                $meta_query_array[] = array(
-                    'key'     => 'first_name',
-                    'value'   => $biografia_val,
-                    'compare' => 'LIKE',
-                );
-                error_log('[PMPRO_CUSTOM_SEARCH DEBUG] Adding mi_biograf_a to meta_query: ' . $biografia_val);
+               // 1. Split the input string into individual words
+                $search_terms = explode(' ', $biografia_val);
+
+                // Initialize an array for the name-specific meta queries
+                // This will combine individual term searches with an 'AND' relation.
+                // Meaning, if input is "John Doe", it will look for "John" AND "Doe".
+                $name_meta_queries = array('relation' => 'AND');
+
+                // 2. Iterate through each search term
+                foreach ($search_terms as $term) {
+                    $term = trim($term); // Clean up whitespace from the term
+                    if (!empty($term)) {
+                        // For each valid term, create an OR condition:
+                        // Does this term match 'first_name' OR 'last_name'?
+                        $name_meta_queries[] = array(
+                            'relation' => 'OR',
+                            array(
+                                'key'     => 'first_name',
+                                'value'   => $term,
+                                'compare' => 'LIKE',
+                            ),
+                            array(
+                                'key'     => 'last_name',
+                                'value'   => $term,
+                                'compare' => 'LIKE',
+                            ),
+                        );
+                    }
+                }
+
+                // 3. Add the constructed name query to your main $meta_query_array
+                // Only add if there are actual search terms found
+                if (count($name_meta_queries) > 1) { // >1 because the 'relation' key counts as 1
+                    $meta_query_array[] = $name_meta_queries;
+                }
+
+                error_log('[PMPRO_CUSTOM_SEARCH DEBUG] Adding intelligent name search to meta_query for: ' . $biografia_val);
             }
+            
 
             if (!empty($categoria_servicio_val)) {
                 //$escaped_val = $wpdb->esc_like($categoria_servicio_val);
